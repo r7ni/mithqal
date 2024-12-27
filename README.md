@@ -25,7 +25,7 @@ Languages used: HTML, CSS, JavaScript and TypeScript.
 3. **`favicon.ico`:** Website Icon.
 4. **`image.png`:** Image of the webpage for the README.
 5. **`index.html`:** The main page that holds the calculator process.
-6. **`style.css`:** Pure CSS styling for the HTML.
+6. **`style.css`:** CSS styling for the HTML.
 
 ---
 
