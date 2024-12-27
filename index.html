@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+      </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-way Mithqal and Currency Converter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="background"></div>
+    <div class="calculator">
+        <p class="a">Alláh'u'Abhá</p>
+        <h2 class="h2">mithqál ⇄ currency</h2>
+        <p class="b">two-way calculator</p>
+        <div class="form-group">
+            <label class="c" for="metalType" >metal:</label>
+            <div class="radio-inputs">
+              <label class="radio">
+                <input type="radio" name="metalType" value="gold" checked>
+                <span class="name">Gold</span>
+              </label>
+              <label class="radio">
+                <input type="radio" name="metalType" value="silver">
+                <span class="name">Silver</span>
+              </label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="mithqals"><i># of mithqáls:</i></label>
+            <input 
+                type="text" 
+                id="mithqals" 
+                placeholder="enter the amount of mithqáls" 
+                oninput="formatMithqals(this); calculateMoneyFromMithqals()">
+        </div>
+        <div class="form-group">
+            <label for="money"><i># of currency:</i></label>
+            <input 
+                type="text" 
+                id="money" 
+                placeholder="enter the amount of currency" 
+                oninput="formatMoney(this); calculateMithqalsFromMoney()">
+        </div>
+        <div class="form-group">
+            <label for="currency"><i>currency:</i></label>
+            <select id="currency" onchange="calculateMoneyFromMithqals()">  
+                <option value="USD">USD - United States Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="GBP">GBP - British Pound</option>
+                <option value="CAD">CAD - Canadian Dollar</option>
+                <option disabled="true" value="none">.---- ----.</option>
+                <option value="ARS">ARS - Argentine Peso</option>
+                <option value="AUD">AUD - Australian Dollar</option>
+                <option value="BRL">BRL - Brazilian Real</option>
+                <option value="CNY">CNY - Chinese Yuan</option>
+                <option value="COP">COP - Colombian Peso</option>
+                <option value="DKK">DKK - Danish Krone</option>
+                <option value="EGP">EGP - Egyptian Pound</option>
+                <option value="HKD">HKD - Hong Kong Dollar</option>
+                <option value="INR">INR - Indian Rupee</option>
+                <option value="IDR">IDR - Indonesian Rupiah</option>
+                <option value="ILS">ILS - Israeli New Shekel</option>
+                <option value="JPY">JPY - Japanese Yen</option>
+                <option value="KWD">KWD - Kuwaiti Dinar</option>
+                <option value="MYR">MYR - Malaysian Ringgit</option>
+                <option value="MXN">MXN - Mexican Peso</option>
+                <option value="NZD">NZD - New Zealand Dollar</option>
+                <option value="NGN">NGN - Nigerian Naira</option>
+                <option value="NOK">NOK - Norwegian Krone</option>
+                <option value="PKR">PKR - Pakistani Rupee</option>
+                <option value="PHP">PHP - Philippine Peso</option>
+                <option value="PLN">PLN - Polish Zloty</option>
+                <option value="RUB">RUB - Russian Ruble</option>
+                <option value="SAR">SAR - Saudi Riyal</option>
+                <option value="SGD">SGD - Singapore Dollar</option>
+                <option value="ZAR">ZAR - South African Rand</option>
+                <option value="KRW">KRW - South Korean Won</option>
+                <option value="SEK">SEK - Swedish Krona</option>
+                <option value="CHF">CHF - Swiss Franc</option>
+                <option value="THB">THB - Thai Baht</option>
+                <option value="TRY">TRY - Turkish Lira</option>
+                <option value="AED">AED - United Arab Emirates Dirham</option>
+                <option value="VND">VND - Vietnamese Dong</option>
+                <!-- Simply check the official ISO for the currency then simply insert them here in the same format -->
+            </select>
+        </div>
+        <p class="d">mithqál = 3.641667 g</p>
+    </div>
+    <script>
+        /*
+        *   These Functions range from formatting to recalculating logic.
+        *   A lot of this logic is already in the program and is NOT needed here.
+        *   This was just for personal training and curiousty.
+        *   A more refined and for release version would have a lot of this logic firstly shipped to script.js for beautification.
+        *   Secondly deleting the duplicate functions that are not necessarily needed again.
+        *   If I were to release this I would also trasfer these files into astro.js and react so to kill the bloatware automatically.
+        */
+        function formatMoney(input) { //removing invalid inputs and adding commas
+            let value = input.value.replace(/[^0-9.]/g, ""); //Removes invalid inputs
+            const parts = value.split(".");
+            if (parts.length > 2) {
+                value = parts[0] + "." + parts[1]; //keeping one decimal part
+            }
+            const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            input.value = parts.length > 1 ? integerPart + "." + parts[1] : integerPart;
+        }
+
+        function formatMithqals(input) { //calling formatMoney instead of repeating logic
+            formatMoney(input);
+        }
+
+        async function calculateMoneyFromMithqals() {
+            const mithqals = parseFloat(document.getElementById("mithqals").value.replace(/,/g, ""));
+            const metalType = document.querySelector('input[name="metalType"]:checked').value;
+            const currency = document.getElementById("currency").value;
+
+            if (isNaN(mithqals) || mithqals <= 0) {
+                document.getElementById("money").value = "";
+                return;
+            }
+
+            const metalPrice = await fetchMetalPrice(metalType);
+            const usdPricePerMithqal = metalPrice * 3.641667; //logic for calculations
+
+            let valueInUSD = mithqals * usdPricePerMithqal;
+
+            if (currency !== "USD") {
+                const exchangeRate = await fetchCurrencyRate(currency);
+                valueInUSD *= exchangeRate;
+            }
+
+            document.getElementById("money").value = valueInUSD.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+        }
+        //repeated logic
+        async function calculateMithqalsFromMoney() {
+            const money = parseFloat(document.getElementById("money").value.replace(/,/g, ""));
+            const metalType = document.querySelector('input[name="metalType"]:checked').value;
+            const currency = document.getElementById("currency").value;
+
+            if (isNaN(money) || money <= 0) {
+                document.getElementById("mithqals").value = "";
+                return;
+            }
+
+            const metalPrice = await fetchMetalPrice(metalType);
+            const usdPricePerMithqal = metalPrice * 3.641667;
+
+            let moneyInUSD = money;
+
+            if (currency !== "USD") {
+                const exchangeRate = await fetchCurrencyRate(currency);
+                moneyInUSD /= exchangeRate;
+            }
+
+            const mithqals = moneyInUSD / usdPricePerMithqal;
+            document.getElementById("mithqals").value = mithqals.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+        }
+
+        //same as script.js and server.ts
+        async function fetchMetalPrice(metalType) {
+            const url =
+                metalType === "gold"
+                    ? "https://api.gold-api.com/price/XAU"
+                    : "https://api.gold-api.com/price/XAG";
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                return data.price / 31.1035; //convert oz to grams
+            } catch (error) {
+                console.error(`INDEX.HTML: Unable to fetch ${metalType}, ERROR:`, error);
+                return 0;
+            }
+        }
+
+        async function fetchCurrencyRate(currency) {
+            const url = `https://hexarate.paikama.co/api/rates/latest/USD?target=${currency}`; //Format needed for the API
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                return data.data.mid;
+            } catch (error) {
+                console.error(`INDEX.HTML Unable to fetch rate for ${currency}, ERROR:`, error);
+                return 1; //If unable to respond
+            }
+        }
+
+        document.getElementById("mithqals").addEventListener("input", calculateMoneyFromMithqals); //listeners 
+        document.getElementById("money").addEventListener("input", calculateMithqalsFromMoney);
+
+        document.querySelectorAll('input[name="metalType"]').forEach((radio) => {
+            radio.addEventListener("change", () => {
+                calculateMoneyFromMithqals(); //Ccalculate with the new metal type
+            });
+        });
+
+        document.getElementById("currency").addEventListener("change", calculateMoneyFromMithqals);
+    </script>
+</body>
+</html>
