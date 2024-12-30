@@ -1,5 +1,7 @@
 # Mithqál Currency Calculator
 
+A static live version is also available on my page.
+
 A fullstack two-way modern calculator to convert (Baháʼí Mithqáls of Gold/Silver<->Currency) applicable to all ISO 4217 certified currencies.
 Languages used: HTML, CSS, JavaScript and TypeScript.
 
